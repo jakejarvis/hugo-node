@@ -5,6 +5,7 @@ name: Check for Hugo releases
 on:
   schedule:
   - cron: '0 */3 * * *'   # run every three hours
+  workflow_dispatch:
 
 jobs:
   check:
@@ -14,26 +15,29 @@ jobs:
       ACTIONS_ALLOW_UNSECURE_COMMANDS: true
     steps:
     - name: Get latest Hugo version
+      id: hugo_version
       # https://gist.github.com/lukechilds/a83e1d7127b78fef38c2914c4ececc3c
       run: |
         HUGO_VERSION=$(curl --silent "https://api.github.com/repos/gohugoio/hugo/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
-        echo "::set-env name=HUGO_VERSION::$HUGO_VERSION"
+        echo "::set-output name=HUGO_VERSION::$HUGO_VERSION"
     - name: Get latest package version
+      id: package_version
       run: |
         PACKAGE_VERSION=v$(npm show hugo-extended version)  # prepend v to match above format
-        echo "::set-env name=PACKAGE_VERSION::$PACKAGE_VERSION"
+        echo "::set-output name=PACKAGE_VERSION::$PACKAGE_VERSION"
     - name: Compare versions
+      id: update
       run: |
-        echo "Current Hugo version is $HUGO_VERSION."
-        echo "Current package version is $PACKAGE_VERSION."
+        echo "Current Hugo version is ${{ steps.hugo_version.outputs.HUGO_VERSION }}."
+        echo "Current package version is ${{ steps.package_version.outputs.PACKAGE_VERSION }}."
 
-        if [ "$HUGO_VERSION" != "$PACKAGE_VERSION" ]
+        if [ "${{ steps.hugo_version.outputs.HUGO_VERSION }}" != "${{ steps.package_version.outputs.PACKAGE_VERSION }}" ]
         then
           echo "🚨 Needs updating!"
-          echo "::set-env name=UPDATE_AVAILABLE::true"
+          echo "::set-output name=UPDATE_AVAILABLE::true"
           exit 1
         else
           echo "✅ All good for now."
-          echo "::set-env name=UPDATE_AVAILABLE::false"
+          echo "::set-output name=UPDATE_AVAILABLE::false"
           exit 0
         fi
