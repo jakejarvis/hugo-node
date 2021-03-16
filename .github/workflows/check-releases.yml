@@ -23,8 +23,8 @@ jobs:
     - name: Compare versions
       id: update
       run: |
-        echo "Current Hugo version is ${{ steps.hugo_version.outputs.VERSION }}."
-        echo "Current package version is ${{ steps.package_version.outputs.VERSION }}."
+        echo "Current package version is v${{ steps.package_version.outputs.VERSION }}."
+        echo "Current Hugo version is v${{ steps.hugo_version.outputs.VERSION }}."
 
         if [ "${{ steps.hugo_version.outputs.VERSION }}" != "${{ steps.package_version.outputs.VERSION }}" ]
         then
@@ -36,3 +36,5 @@ jobs:
           echo "::set-output name=UPDATE_AVAILABLE::false"
           exit 0
         fi
+
+# TODO: Automatically bump npm package, commit back to repo, and publish new version.
