@@ -37,7 +37,7 @@
   },
   "devDependencies": {
     "bin-check": "^4.1.0",
-    "mocha": "^8.3.2",
+    "mocha": "^8.4.0",
     "xo": "^0.39.1"
   },
   "scripts": {
