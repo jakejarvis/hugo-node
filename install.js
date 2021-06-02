@@ -108,17 +108,22 @@ async function install() {
       );
     }).on('error', reject));
 
-    // TODO: validate the checksum of the download
-    // https://github.com/jakejarvis/hugo-extended/issues/1
-    await sumchecker('sha256', checksumPath, vendorDir, downloadFile);
+    // validate the checksum of the download
+    const checker = new sumchecker.ChecksumValidator('sha256', checksumPath, {
+      defaultTextEncoding: 'binary'
+    });
+    await checker.validate(vendorDir, downloadFile);
 
     // extract the downloaded file
     await decompress(archivePath, vendorDir);
   } finally {
     // delete the downloaded archive when finished
-    if (fs.existsSync(archivePath)) {
-      //await fs.promises.unlink(archivePath);
-    }
+    if (fs.existsSync(archivePath))
+      await fs.promises.unlink(archivePath);
+
+      // ...and the checksum file
+    if (fs.existsSync(checksumPath))
+      await fs.promises.unlink(checksumPath);
   }
 
   // return the full path to our Hugo binary
